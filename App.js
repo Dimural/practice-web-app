@@ -1,18 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { TextInput, Button, View, Text } from 'react-native';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
+import { useEffect, useState } from 'react';
+import { Button, Text, TextInput, View } from 'react-native';
+import Constants from 'expo-constants';
 
-// Replace these placeholders with your Firebase project values.
-const firebaseConfig = {
-  apiKey: 'YOUR_API_KEY',
-  authDomain: 'YOUR_AUTH_DOMAIN',
-  projectId: 'YOUR_PROJECT_ID',
-  storageBucket: 'YOUR_STORAGE_BUCKET',
-  messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-  appId: 'YOUR_APP_ID',
-};
+const firebaseConfig = Constants.expoConfig?.extra?.firebase;
+
+if (!firebaseConfig) {
+  throw new Error('Missing Firebase config. Check app.config.js and your .env values.');
+}
 
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
