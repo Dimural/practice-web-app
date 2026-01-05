@@ -1,9 +1,11 @@
+import Constants from 'expo-constants';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
+import 'firebase/database';
 import { useEffect, useState } from 'react';
 import { Button, Text, TextInput, View } from 'react-native';
-import Constants from 'expo-constants';
+
 
 const firebaseConfig = Constants.expoConfig?.extra?.firebase;
 
@@ -53,6 +55,24 @@ const App = () => {
     } catch (error) {
       alert(error.message);
     }
+  };
+
+  const writeData = () => {
+    firebase.database().ref('/users/1').set({
+      name: 'John Doe',
+      email: email,
+    }).then(() => {
+      alert('Data saved!');
+    }).catch(error => alert(error.message));
+  };
+
+  const readData = () => {
+    firebase.database().ref('/users/1').once('value')
+      .then(snapshot => {
+        const data = snapshot.val();
+        alert('User data: ' + JSON.stringify(data));
+      })
+      .catch(error => alert(error.message));
   };
 
   return (
