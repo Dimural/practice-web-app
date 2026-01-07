@@ -4,7 +4,7 @@ import 'firebase/compat/auth';
 import 'firebase/compat/database';
 import 'firebase/database';
 import { useEffect, useState } from 'react';
-import { Button, Text, TextInput, View } from 'react-native';
+import { Button, Text, TextInput, View, StyleSheet, ActivityIndicator } from 'react-native';
 
 
 const firebaseConfig = Constants.expoConfig?.extra?.firebase;
@@ -23,6 +23,8 @@ const App = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [user, setUser] = useState(null);
+  const [status, setStatus] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const unsubscribe = firebase.auth().onAuthStateChanged(setUser);
@@ -30,31 +32,41 @@ const App = () => {
   }, []);
 
   const signUp = async () => {
+    if (!email || !password) return setStatus('Enter email and password.');
+    setLoading(true);
+    setStatus('');
     try {
       await firebase.auth().createUserWithEmailAndPassword(email, password);
-      alert('User created!');
+      setStatus('User created!');
     } catch (error) {
-      alert(error.message);
+      setStatus(error.message);
     }
+    setLoading(false);
   };
 
   const signIn = async () => {
+    if (!email || !password) return setStatus('Enter email and password.');
+    setLoading(true);
+    setStatus('');
     try {
       await firebase.auth().signInWithEmailAndPassword(email, password);
-      alert('User signed in!');
+      setStatus('Signed in!');
     } catch (error) {
-      alert(error.message);
+      setStatus(error.message);
     }
+    setLoading(false);
   };
 
   const signOut = async () => {
+    setLoading(true);
     try {
       await firebase.auth().signOut();
       setUser(null);
-      alert('User signed out!');
+      setStatus('Signed out.');
     } catch (error) {
-      alert(error.message);
+      setStatus(error.message);
     }
+    setLoading(false);
   };
 
   const writeData = () => {
@@ -76,27 +88,63 @@ const App = () => {
   };
 
   return (
-    <View style={{ padding: 20, gap: 10 }}>
+    <View style={styles.screen}>
+      <Text style={styles.title}>Firebase Auth Demo</Text>
       <TextInput
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
-        style={{ borderBottomWidth: 1, paddingVertical: 8 }}
+        style={styles.input}
       />
       <TextInput
         placeholder="Password"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
-        style={{ borderBottomWidth: 1, paddingVertical: 8 }}
+        style={styles.input}
       />
-      <Button title="Sign Up" onPress={signUp} />
-      <Button title="Sign In" onPress={signIn} />
-      <Button title="Sign Out" onPress={signOut} />
-      {user && <Text style={{ marginTop: 10 }}>Welcome, {user.email}</Text>}
+      <Button title="Sign Up" onPress={signUp} disabled={loading} />
+      <Button title="Sign In" onPress={signIn} disabled={loading} />
+      <Button title="Sign Out" onPress={signOut} disabled={loading || !user} />
+      {loading && <ActivityIndicator style={{ marginTop: 8 }} />}
+      {status ? <Text style={styles.status}>{status}</Text> : null}
+      {user && <Text style={styles.welcome}>Welcome, {user.email}</Text>}
     </View>
   );
 };
 
 export default App;
+
+const styles = StyleSheet.create({
+  screen: {
+    padding: 20,
+    gap: 10,
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: '#f7f9fc',
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '600',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  input: {
+    borderBottomWidth: 1,
+    paddingVertical: 8,
+    backgroundColor: 'white',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+  },
+  status: {
+    marginTop: 6,
+    textAlign: 'center',
+    color: '#444',
+  },
+  welcome: {
+    marginTop: 10,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+});
